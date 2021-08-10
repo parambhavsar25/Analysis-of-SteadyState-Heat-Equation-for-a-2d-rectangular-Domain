@@ -1,0 +1,204 @@
+import matplotlib.pyplot as plt
+import math as m
+import numpy as np
+import seaborn as sb
+
+
+# Functions
+def BoundaryPlot(A, B):
+    import matplotlib.pyplot as plt
+    Bx = [0, 0, A, A, 0]
+    By = [0, B, B, 0, 0]
+    plt.plot(Bx, By, color='red', Label=" Boundary ")
+
+
+def VerticleLine(P, Q, k):
+    import matplotlib.pyplot as plt
+    bx = [P, P]
+    by = [0, Q]
+    plt.plot(bx, by, color='blue', Label="Vertical line" + str(k), )
+
+
+def HorizontalLine(P, Q, k):
+    import matplotlib.pyplot as plt
+    bx = [P, P]
+    by = [0, Q]
+    plt.plot(by, bx, color='blue', Label="Vertical line" + str(k), )
+
+
+# input taking
+
+Lx = float(input("Input the length of Mesh domain Along X :"))
+Ly = float(input("Input the breadth of Mesh domain Along Y :"))
+SRx = float(input("Input the Successive Ration Along X :"))
+SRy = float(input("Input the Successive Ration Along Y :"))
+
+Boo = input("Enter 'N' if input is Cell Numbers Along X and Y,Or Enter 'L' if Length of first mesh domain length :")
+
+if Boo == 'N':
+    Nx = int(input("Input the Cell Numbers along X :"))
+    Ny = int(input("Input the Cell Numbers along Y :"))
+    if SRx == 1 and SRy == 1:
+        X = Lx / Nx
+        Y = Ly / Ny
+    elif SRx == 1:
+        X = Lx / Nx
+        Y = Lx * (SRy - 1) / (SRy ** Ny - 1)
+    elif SRy == 1:
+        Y = Ly / Ny
+        X = Lx * (SRx - 1) / (SRx ** Nx - 1)
+    else:
+        X = Lx * (SRx - 1) / (SRx ** Nx - 1)
+        Y = Lx * (SRy - 1) / (SRy ** Ny - 1)
+    BoundaryPlot(Lx, Ly)
+    a = 0
+    for i in range(0, Nx - 1):
+        a = X * SRx ** i + a
+        VerticleLine(a, Ly, i)
+    b = 0
+    for i in range(0, Ny - 1):
+        b = Y * SRy ** i + b
+        HorizontalLine(b, Lx, i)
+
+elif Boo == "L":
+    X = float(input("Input the First cell length along X :"))
+    Y = float(input("Input the First cell length along Y :"))
+    Nx = m.log(Lx * (SRx - 1) / X + 1) / m.log(SRx)
+    Ny = m.log(Ly * (SRy - 1) / Y + 1) / m.log(SRy)
+    Nx = int(Nx)
+    Ny = int(Ny)
+    BoundaryPlot(Lx, Ly)
+    a = 0
+    for i in range(0, Nx - 1):
+        a = X * SRx ** i + a
+        VerticleLine(a, Ly, i)
+    b = 0
+    for i in range(0, Ny - 1):
+        b = Y * SRy ** i + b
+        HorizontalLine(b, Lx, i)
+
+else:
+    print("Invalid input, please enter either 'N' or 'L' and try again")
+
+plt.legend()
+plt.show()
+
+
+# mesh Generation Over __
+# Initialization Functions
+def Initialize(M, p, z, q, l, T1, T2, T3, T4):
+    for i in range(0, p):
+        for k in range(i, q - i):
+            M[k][i] = T1
+            M[k][l - i - 1] = T3
+    for i in range(0, z):
+        for k in range(i + 1, l - i - 1):
+            M[i][k] = T2
+            M[q - i - 1][k] = T4
+
+
+def ReInitializing(M, T1, T2, T3, T4, l, q):
+    for i in range(0, L):
+        M[i][0] = T1
+        M[i][l - 1] = T3
+    for i in range(0, Q):
+        M[0][i] = T2
+        M[q - 1][i] = T4
+    # Boundary conditions input
+
+
+T_1 = int(input("Enter the Boundary Temperature of the Left most boundary as T1 : "))
+T_2 = int(input("Enter the Boundary Temperature of the Upper most boundary as T2 : "))
+T_3 = int(input("Enter the Boundary Temperature of the Right most boundary as T3 : "))
+T_4 = int(input("Enter the Boundary Temperature of the Bottom most boundary as T4 : "))
+L = Nx + 2
+Q = Ny + 2
+Matrix = np.zeros((L, Q))
+
+if L % 2 == 0 and Q % 2 == 0:
+    P = L / 2
+    Z = Q / 2 - 1
+    P = int(P)
+    Z = int(Z)
+    Initialize(Matrix, P, Z, Q, L, T_1, T_2, T_3, T_4)
+elif L % 2 != 0 and Q % 2 != 0:
+    P = (L - 1) / 2
+    Z = (Q - 1) / 2
+    P = int(P)
+    Z = int(Z)
+    Initialize(Matrix, P, Z, Q, L, T_1, T_2, T_3, T_4)
+    Matrix[Z][P] = T_4
+else:
+    if L % 2 == 0 and Q % 2 != 0:
+        P = L / 2
+        Z = (Q - 1) / 2
+        P = int(P)
+        Z = int(Z)
+        Initialize(Matrix, P, Z, Q, L - 1, T_1, T_2, T_3, T_4)
+        for i in range(0, Q):
+            Matrix[Q][i] = T_4
+    else:
+        P = (L - 1) / 2
+        Z = Q / 2
+        P = int(P)
+        Z = int(Z)
+        Initialize(Matrix, P, Z, Q - 1, L, T_1, T_2, T_3, T_4)
+        for i in range(0, L):
+            Matrix[i][Q - 1] = T_3
+
+print(Matrix)
+print("..........................Initialization Completed ..............................")
+# Initialization Completed
+
+# Looping Over Interactions and Calculating the values
+# Input of Loops :
+loops = int(input("Enter the Number of iterations wanted to run :"))
+for i in range(0, loops):
+    # Rolling the Axes :
+    M_1 = np.roll(Matrix, 1, axis=0)
+    M_2 = np.roll(Matrix, -1, axis=0)
+    M_3 = np.roll(Matrix, 1, axis=1)
+    M_4 = np.roll(Matrix, -1, axis=1)
+
+    print(M_1)
+    print(M_2)
+    print(M_3)
+    print(M_4)
+    M_new1 = np.add(M_1, M_2)
+    M_new2 = np.add(M_3, M_4)
+    M_new = np.add(M_new1, M_new2)
+    M_new = np.divide(M_new, 4)
+    print(M_new)
+    ReInitializing(M_new, T_1, T_2, T_3, T_4, L, Q)
+    print(M_new)
+    Matrix = M_new
+print("......................................... Final Output ..........................................")
+print(Matrix)
+
+# making Counters to show the results
+x_values = []
+y_values = []
+x_values.append(0)
+y_values.append(0)
+x_values.append(X / 2)
+y_values.append(Y / 2)
+for i in range(1, Nx + 1):
+    if SRx == 1:
+        x_values.append(X / 2 + i * X)
+    else:
+        x_values.append(X + SRx ** i / 2)
+for i in range(1, Ny + 1):
+    if SRy == 1:
+        y_values.append(Y / 2 + i * Y)
+    else:
+        y_values.append(Y + SRy ** i / 2)
+print(x_values)
+print(y_values)
+plt.imshow(Matrix, cmap="autumn", interpolation="nearest")
+plt.show()
+ax = sb.heatmap(Matrix, linewidth=0.1, cmap="coolwarm")
+plt.show()
+X_value, Y_value = np.meshgrid(x_values, y_values)
+
+plt.contourf(X_value, Y_value, Matrix, 50, cmap=plt.cm.jet)
+plt.show()
