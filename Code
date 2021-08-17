@@ -9,21 +9,21 @@ def BoundaryPlot(A, B):
     import matplotlib.pyplot as plt
     Bx = [0, 0, A, A, 0]
     By = [0, B, B, 0, 0]
-    plt.plot(Bx, By, color='red', Label=" Boundary ")
+    plt.plot(Bx, By, color='red')
 
 
 def VerticleLine(P, Q, k):
     import matplotlib.pyplot as plt
     bx = [P, P]
     by = [0, Q]
-    plt.plot(bx, by, color='blue', Label="Vertical line" + str(k), )
+    plt.plot(bx, by, color='blue')
 
 
 def HorizontalLine(P, Q, k):
     import matplotlib.pyplot as plt
     bx = [P, P]
     by = [0, Q]
-    plt.plot(by, bx, color='blue', Label="Vertical line" + str(k), )
+    plt.plot(by, bx, color='blue')
 
 
 # input taking
@@ -98,13 +98,23 @@ def Initialize(M, p, z, q, l, T1, T2, T3, T4):
 
 
 def ReInitializing(M, T1, T2, T3, T4, l, q):
-    for i in range(0, L):
+    for i in range(0, Q):
         M[i][0] = T1
         M[i][l - 1] = T3
-    for i in range(0, Q):
+    for i in range(0, L):
         M[0][i] = T2
         M[q - 1][i] = T4
     # Boundary conditions input
+
+
+# types of boundary condition
+def BoundaryConditionType(o):
+    Boundary_type = []
+    for i in range(0, o):
+        Boundary_type[i] = input(
+            "Enter 'D' for diriclet boundary,'I' for insulation, 'R' for Robins boundary, 'M' for mixed boundary ")
+        if Boundary_type[i] == 'D':
+            pass
 
 
 T_1 = int(input("Enter the Boundary Temperature of the Left most boundary as T1 : "))
@@ -113,11 +123,11 @@ T_3 = int(input("Enter the Boundary Temperature of the Right most boundary as T3
 T_4 = int(input("Enter the Boundary Temperature of the Bottom most boundary as T4 : "))
 L = Nx + 2
 Q = Ny + 2
-Matrix = np.zeros((L, Q))
+Matrix = np.zeros((Q, L))
 
 if L % 2 == 0 and Q % 2 == 0:
     P = L / 2
-    Z = Q / 2 - 1
+    Z = Q / 2
     P = int(P)
     Z = int(Z)
     Initialize(Matrix, P, Z, Q, L, T_1, T_2, T_3, T_4)
@@ -135,16 +145,16 @@ else:
         P = int(P)
         Z = int(Z)
         Initialize(Matrix, P, Z, Q, L - 1, T_1, T_2, T_3, T_4)
-        for i in range(0, Q):
-            Matrix[Q][i] = T_4
+        for i in range(0, L):
+            Matrix[Q - 1][i] = T_4
     else:
         P = (L - 1) / 2
         Z = Q / 2
         P = int(P)
         Z = int(Z)
-        Initialize(Matrix, P, Z, Q - 1, L, T_1, T_2, T_3, T_4)
-        for i in range(0, L):
-            Matrix[i][Q - 1] = T_3
+        Initialize(Matrix, P, Z, Q, L, T_1, T_2, T_3, T_4)
+        for i in range(0, Q):
+            Matrix[i][L - 1] = T_3
 
 print(Matrix)
 print("..........................Initialization Completed ..............................")
@@ -194,11 +204,24 @@ for i in range(1, Ny + 1):
         y_values.append(Y + SRy ** i / 2)
 print(x_values)
 print(y_values)
-plt.imshow(Matrix, cmap="autumn", interpolation="nearest")
-plt.show()
+
+
 ax = sb.heatmap(Matrix, linewidth=0.1, cmap="coolwarm")
 plt.show()
-X_value, Y_value = np.meshgrid(x_values, y_values)
 
-plt.contourf(X_value, Y_value, Matrix, 50, cmap=plt.cm.jet)
+plt.imshow(Matrix, cmap="autumn", interpolation="nearest")
+plt.show()
+T = np.flipud(Matrix)
+X_value, Y_value = np.meshgrid(x_values, y_values)
+print(X_value)
+print(Y_value)
+print(Matrix)
+
+print(Matrix)
+plt.contourf(X_value, Y_value, T, 50, cmap=plt.cm.jet)
+plt.show()
+fig = plt.figure(figsize=(6, 6))
+ax = fig.add_subplot(111, projection='3d')
+surf_1 = ax.plot_surface(Y_value, X_value, T, cmap=plt.get_cmap('jet'))
+fig.colorbar(surf_1, ax=ax, shrink=0.5, aspect=5)
 plt.show()
